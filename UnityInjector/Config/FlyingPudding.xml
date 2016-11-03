@@ -1,0 +1,20 @@
+<FlyingPudding>
+  <KeyConfig
+    MoveForward="S"
+    MoveBackward="W"
+    MoveLeft="A"
+    MoveRight="D"
+    MoveUp="JoystickButton6"
+    MoveDown="JoystickButton7"
+    RotateUp="JoystickButton0"
+    RotateDown="JoystickButton2"
+    RotateLeft="JoystickButton3"
+    RotateRight="JoystickButton1"
+    SlopeLeft="JoystickButton5"
+    SlopeRight="JoystickButton4"
+  />
+  <Speed
+    Move="0.025"
+    Rotate="1.0"
+  />
+</FlyingPudding>
