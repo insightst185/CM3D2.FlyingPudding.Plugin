@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityInjector;
 using UnityInjector.Attributes;
@@ -12,11 +13,11 @@ namespace CM3D2.FlyingPudding.Plugin
     PluginFilter("CM3D2x86"),
     PluginFilter("CM3D2VRx64"),
     PluginName("FlyingPudding"),
-    PluginVersion("0.0.0.1")]
+    PluginVersion("0.0.0.2")]
     public class FlyingPudding : PluginBase
     {
         private XmlManager xmlManager;
-        private int maidNo = 0;
+//        private int maidNo = 0;
         private Vector3 move = new Vector3();
         private Vector3 rotate = new Vector3();
 
@@ -41,7 +42,7 @@ namespace CM3D2.FlyingPudding.Plugin
             {
                  xmlManager = new XmlManager();
 
-                 maidNo = 0;
+//                 maidNo = 0;
             }
         }
 
@@ -91,38 +92,41 @@ namespace CM3D2.FlyingPudding.Plugin
             // Maid Move
             if (Enum.IsDefined(typeof(TargetLevel), Application.loadedLevel))
             {
-                Maid maid = GameMain.Instance.CharacterMgr.GetMaid(maidNo);
-                if(maid != null){
-                    // ジョイスティック入力
-                    move.x = - Input.GetAxis(xmlManager.JsMoveX);
-                    move.z = - Input.GetAxis(xmlManager.JsMoveY);
+                foreach (int maidNo in xmlManager.maidNoList.ToArray())
+                {
+                    Maid maid = GameMain.Instance.CharacterMgr.GetMaid(maidNo);
+                    if(maid != null){
+                        // ジョイスティック入力
+                        move.x = - Input.GetAxis(xmlManager.JsMoveX);
+                        move.z = - Input.GetAxis(xmlManager.JsMoveY);
                     
-                    // キーボード入力
-                    move.y = (Input.GetKey(xmlManager.KbMoveUp))       ?  xmlManager.MoveSpeed :
-                             (Input.GetKey(xmlManager.KbMoveDown))     ? -xmlManager.MoveSpeed : 0.0f;
-                    if (move.z * move.z < 0.2f * 0.2f){
-                      move.z = (Input.GetKey(xmlManager.KbMoveForward))  ?  xmlManager.MoveSpeed :
-                               (Input.GetKey(xmlManager.KbMoveBackward)) ? -xmlManager.MoveSpeed : 0.0f;
-                    }
-                    else{
-                      move.z = move.z * xmlManager.MoveSpeed;
-                    }
-                    if (move.x * move.x < 0.2f * 0.2f){
-                      move.x = (Input.GetKey(xmlManager.KbMoveRight))    ? -xmlManager.MoveSpeed :
-                               (Input.GetKey(xmlManager.KbMoveLeft))     ?  xmlManager.MoveSpeed : 0.0f;
-                    }
-                    else{
-                      move.x = move.x * xmlManager.MoveSpeed;
-                    }
-                    rotate.y = (Input.GetKey(xmlManager.KbRotateRight)) ?  xmlManager.RotateSpeed :
-                               (Input.GetKey(xmlManager.KbRotateLeft))  ? -xmlManager.RotateSpeed : 0.0f;
-                    rotate.x = (Input.GetKey(xmlManager.KbRotateUp))    ?  xmlManager.RotateSpeed :
-                               (Input.GetKey(xmlManager.KbRotateDown))  ? -xmlManager.RotateSpeed : 0.0f;
-                    rotate.z = (Input.GetKey(xmlManager.KbSlopeRight))  ?  xmlManager.RotateSpeed :
-                               (Input.GetKey(xmlManager.KbSlopeLeft))   ? -xmlManager.RotateSpeed : 0.0f;
+                        // キーボード入力
+                        move.y = (Input.GetKey(xmlManager.KbMoveUp))       ?  xmlManager.MoveSpeed :
+                                 (Input.GetKey(xmlManager.KbMoveDown))     ? -xmlManager.MoveSpeed : 0.0f;
+                        if (move.z * move.z < 0.2f * 0.2f){
+                          move.z = (Input.GetKey(xmlManager.KbMoveForward))  ?  xmlManager.MoveSpeed :
+                                   (Input.GetKey(xmlManager.KbMoveBackward)) ? -xmlManager.MoveSpeed : 0.0f;
+                        }
+                        else{
+                          move.z = move.z * xmlManager.MoveSpeed;
+                        }
+                        if (move.x * move.x < 0.2f * 0.2f){
+                          move.x = (Input.GetKey(xmlManager.KbMoveRight))    ? -xmlManager.MoveSpeed :
+                                   (Input.GetKey(xmlManager.KbMoveLeft))     ?  xmlManager.MoveSpeed : 0.0f;
+                        }
+                        else{
+                          move.x = move.x * xmlManager.MoveSpeed;
+                        }
+                        rotate.y = (Input.GetKey(xmlManager.KbRotateRight)) ?  xmlManager.RotateSpeed :
+                                   (Input.GetKey(xmlManager.KbRotateLeft))  ? -xmlManager.RotateSpeed : 0.0f;
+                        rotate.x = (Input.GetKey(xmlManager.KbRotateUp))    ?  xmlManager.RotateSpeed :
+                                   (Input.GetKey(xmlManager.KbRotateDown))  ? -xmlManager.RotateSpeed : 0.0f;
+                        rotate.z = (Input.GetKey(xmlManager.KbSlopeRight))  ?  xmlManager.RotateSpeed :
+                                   (Input.GetKey(xmlManager.KbSlopeLeft))   ? -xmlManager.RotateSpeed : 0.0f;
 
-                    maid.SetPos(maid.gameObject.transform.localPosition + move);
-                    maid.SetRot(maid.GetRot() + rotate);
+                        maid.SetPos(maid.gameObject.transform.localPosition + move);
+                        maid.SetRot(maid.GetRot() + rotate);
+                    }
                 }
             }
         }
@@ -149,6 +153,8 @@ namespace CM3D2.FlyingPudding.Plugin
             // けど、わかったらxmlから読むように変えたいにょ
             public String JsMoveX = "Oculus_GearVR_LThumbstickX";
             public String JsMoveY = "Oculus_GearVR_LThumbstickY";
+
+            public List<int> maidNoList = new List<int>();
 
             public float MoveSpeed = 0.05f;
             public float RotateSpeed = 1.0f;
@@ -200,6 +206,15 @@ namespace CM3D2.FlyingPudding.Plugin
                 XmlNode Speed = xmldoc.GetElementsByTagName("Speed")[0];
                 Single.TryParse(((XmlElement)Speed).GetAttribute("Move"), out MoveSpeed);
                 Single.TryParse(((XmlElement)Speed).GetAttribute("Rotate"), out RotateSpeed);
+
+                XmlNodeList targetList = xmldoc.GetElementsByTagName("Target");
+                foreach (XmlNode nodeTarget in targetList)
+                {
+                    XmlNodeList maid = ((XmlElement)nodeTarget).GetElementsByTagName("Maid");
+                    foreach (XmlNode nodeMaid in maid){
+                        maidNoList.Add(Int32.Parse(((XmlElement)nodeMaid).GetAttribute("No")));
+                    }
+                }
             }
 
 

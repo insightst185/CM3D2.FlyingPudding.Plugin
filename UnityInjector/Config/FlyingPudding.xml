@@ -17,4 +17,8 @@
     Move="0.025"
     Rotate="1.0"
   />
+  <Target>
+    <Maid No="0" />
+    <Maid No="1" />
+  </Target>
 </FlyingPudding>
